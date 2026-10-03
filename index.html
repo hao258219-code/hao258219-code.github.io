@@ -12,7 +12,11 @@
 <script>
   // ホーム画面のアイコンから開いたときは、すぐアプリ本体へ
   var APP = 'https://script.google.com/macros/s/AKfycbx9IxckvHvW0skKEuB3O5koVSP1UAvP6PdITBzauD1Z0t9fdK4Vy8eSrpvrgE6TeQjEQA/exec';
-  if (window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches) location.replace(APP);
+  var ua = navigator.userAgent;
+  var isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  // ホーム画面のアイコンから開いたとき、またはiPhone以外（Android・PC）は、すぐアプリ本体へ
+  if (window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches || !isIOS) location.replace(APP);
+  var inApp = /Line\/|FBAN|FBAV|Instagram/i.test(ua) || (isIOS && !/Safari\//.test(ua));
 </script>
 <style>
   :root { --bg: #13294b; --card: #ffffff; --text: #172238; --sub: #64708a; --accent: #f07b1d; }
@@ -26,6 +30,8 @@
   p { margin: 0 0 18px; color: var(--sub); font-size: 14px; line-height: 1.7; }
   ol { text-align: left; font-size: 15px; line-height: 1.9; margin: 0 0 20px; padding-left: 1.4em; }
   b { color: var(--text); }
+  .warn { background: #fff1e5; color: var(--text); border-radius: 12px; padding: 12px; text-align: left; }
+  [hidden] { display: none !important; }
   a.btn { display: block; background: var(--accent); color: #fff; text-decoration: none; font-weight: 700;
     font-size: 17px; padding: 15px; border-radius: 14px; }
 </style>
@@ -35,6 +41,7 @@
     <img src="apple-touch-icon.png" alt="">
     <h1>練習課題ボード</h1>
     <p>ホーム画面に追加すると、アプリのようにすぐ開けます。</p>
+    <p class="warn" id="inAppNote" hidden>LINEなどのアプリの中で開いています。<br>右下（または右上）のメニューから<b>「Safariで開く」</b>を選んでから、下の手順で追加してください。</p>
     <ol>
       <li>Safariの下（または上）の<b>共有ボタン</b>をタップ</li>
       <li><b>「ホーム画面に追加」</b>をタップ</li>
@@ -42,5 +49,6 @@
     </ol>
     <a class="btn" href="https://script.google.com/macros/s/AKfycbx9IxckvHvW0skKEuB3O5koVSP1UAvP6PdITBzauD1Z0t9fdK4Vy8eSrpvrgE6TeQjEQA/exec">今すぐアプリを開く</a>
   </div>
+<script>if (inApp) document.getElementById('inAppNote').hidden = false;</script>
 </body>
 </html>
