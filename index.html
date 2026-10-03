@@ -14,8 +14,13 @@
   var APP = 'https://script.google.com/macros/s/AKfycbx9IxckvHvW0skKEuB3O5koVSP1UAvP6PdITBzauD1Z0t9fdK4Vy8eSrpvrgE6TeQjEQA/exec';
   var ua = navigator.userAgent;
   var isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  // ホーム画面のアイコンから開いたとき、またはiPhone以外（Android・PC）は、すぐアプリ本体へ
-  if (window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches || !isIOS) location.replace(APP);
+  var standalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+  function savedName() { try { return localStorage.getItem('vb_name') || ''; } catch (e) { return ''; } }
+  function openApp(name) { location.replace(APP + (name ? '?u=' + encodeURIComponent(name) : '')); }
+  // iPhone以外（Android・PC）は、すぐアプリ本体へ
+  if (!isIOS) openApp('');
+  // ホーム画面のアイコンから開いたとき：名前を覚えていれば名前付きでアプリへ（初回だけ名前を聞く）
+  else if (standalone && savedName()) openApp(savedName());
   var inApp = /Line\/|FBAN|FBAV|Instagram/i.test(ua) || (isIOS && !/Safari\//.test(ua));
 </script>
 <style>
@@ -32,12 +37,24 @@
   b { color: var(--text); }
   .warn { background: #fff1e5; color: var(--text); border-radius: 12px; padding: 12px; text-align: left; }
   [hidden] { display: none !important; }
+  input { width: 100%; font-size: 16px; padding: 13px 12px; border: 1.5px solid #dde3ee; border-radius: 12px; margin-bottom: 12px; font-family: inherit; }
+  input:focus { outline: none; border-color: var(--accent); }
+  button.btn { width: 100%; border: 0; background: var(--accent); color: #fff; font-weight: 700; font-size: 17px; padding: 15px; border-radius: 14px; font-family: inherit; }
   a.btn { display: block; background: var(--accent); color: #fff; text-decoration: none; font-weight: 700;
     font-size: 17px; padding: 15px; border-radius: 14px; }
 </style>
 </head>
 <body>
-  <div class="card">
+  <div class="card" id="nameCard" hidden>
+    <img src="apple-touch-icon.png" alt="">
+    <h1>はじめに名前を設定</h1>
+    <p>チームで呼ばれている名前を入れてください。次回からはこの入力なしでアプリが開きます。</p>
+    <form id="nameForm">
+      <input id="nameInput" type="text" maxlength="20" placeholder="例：ひで" autocomplete="off" required>
+      <button class="btn" type="submit">はじめる</button>
+    </form>
+  </div>
+  <div class="card" id="guideCard">
     <img src="apple-touch-icon.png" alt="">
     <h1>練習課題ボード</h1>
     <p>ホーム画面に追加すると、アプリのようにすぐ開けます。</p>
@@ -49,6 +66,19 @@
     </ol>
     <a class="btn" href="https://script.google.com/macros/s/AKfycbx9IxckvHvW0skKEuB3O5koVSP1UAvP6PdITBzauD1Z0t9fdK4Vy8eSrpvrgE6TeQjEQA/exec">今すぐアプリを開く</a>
   </div>
-<script>if (inApp) document.getElementById('inAppNote').hidden = false;</script>
+<script>
+  if (inApp) document.getElementById('inAppNote').hidden = false;
+  if (isIOS && standalone && !savedName()) {
+    document.getElementById('guideCard').hidden = true;
+    document.getElementById('nameCard').hidden = false;
+    document.getElementById('nameForm').onsubmit = function (e) {
+      e.preventDefault();
+      var n = document.getElementById('nameInput').value.trim().slice(0, 20);
+      if (!n) return;
+      try { localStorage.setItem('vb_name', n); } catch (err) {}
+      openApp(n);
+    };
+  }
+</script>
 </body>
 </html>
