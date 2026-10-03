@@ -16,11 +16,16 @@
   var isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   var standalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
   function savedName() { try { return localStorage.getItem('vb_name') || ''; } catch (e) { return ''; } }
-  function openApp(name) { location.replace(APP + (name ? '?u=' + encodeURIComponent(name) : '')); }
+  function openApp(name, fromHome) {
+    var q = [];
+    if (name) q.push('u=' + encodeURIComponent(name));
+    if (fromHome) q.push('from=home');
+    location.replace(APP + (q.length ? '?' + q.join('&') : ''));
+  }
   // iPhone以外（Android・PC）は、すぐアプリ本体へ
   if (!isIOS) openApp('');
   // ホーム画面のアイコンから開いたとき：名前を覚えていれば名前付きでアプリへ（初回だけ名前を聞く）
-  else if (standalone && savedName()) openApp(savedName());
+  else if (standalone && savedName()) openApp(savedName(), true);
   var inApp = /Line\/|FBAN|FBAV|Instagram/i.test(ua) || (isIOS && !/Safari\//.test(ua));
 </script>
 <style>
@@ -35,6 +40,7 @@
   p { margin: 0 0 18px; color: var(--sub); font-size: 14px; line-height: 1.7; }
   ol { text-align: left; font-size: 15px; line-height: 1.9; margin: 0 0 20px; padding-left: 1.4em; }
   b { color: var(--text); }
+  .note { font-size: 13px; text-align: left; margin: 0 0 14px; }
   .warn { background: #fff1e5; color: var(--text); border-radius: 12px; padding: 12px; text-align: left; }
   [hidden] { display: none !important; }
   input { width: 100%; font-size: 16px; padding: 13px 12px; border: 1.5px solid #dde3ee; border-radius: 12px; margin-bottom: 12px; font-family: inherit; }
@@ -64,6 +70,7 @@
       <li><b>「ホーム画面に追加」</b>をタップ</li>
       <li>右上の<b>「追加」</b>をタップ</li>
     </ol>
+    <p class="note">※ホーム画面への追加は、<b>このページを開いたまま</b>行ってください。下のボタンでアプリを開いてから追加すると、アイコンが「練」になります。</p>
     <a class="btn" href="https://script.google.com/macros/s/AKfycbx9IxckvHvW0skKEuB3O5koVSP1UAvP6PdITBzauD1Z0t9fdK4Vy8eSrpvrgE6TeQjEQA/exec">今すぐアプリを開く</a>
   </div>
 <script>
@@ -76,7 +83,7 @@
       var n = document.getElementById('nameInput').value.trim().slice(0, 20);
       if (!n) return;
       try { localStorage.setItem('vb_name', n); } catch (err) {}
-      openApp(n);
+      openApp(n, true);
     };
   }
 </script>
